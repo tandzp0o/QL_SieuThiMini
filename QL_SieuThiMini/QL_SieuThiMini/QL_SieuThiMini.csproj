@@ -11,6 +11,21 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -52,10 +67,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CrystalReport_DoanhThu.cs">
+    <Compile Include="CrystalReport_DoanhThuNgay.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>CrystalReport_DoanhThu.rpt</DependentUpon>
+      <DependentUpon>CrystalReport_DoanhThuNgay.rpt</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="CrystalReport_NhanVien.cs">
@@ -65,18 +80,19 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="CrystalReport_TonKho.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
       <DependentUpon>CrystalReport_TonKho.rpt</DependentUpon>
       <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
     </Compile>
-    <Compile Include="env.cs" />
+    <Compile Include="DAO\env.cs" />
     <Compile Include="NhanVien.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="NhanVien.Designer.cs">
       <DependentUpon>NhanVien.cs</DependentUpon>
     </Compile>
+    <Compile Include="NhanVienSTMN.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Report_DoanhThu.cs">
@@ -97,9 +113,10 @@
     <Compile Include="Report_TonKho.Designer.cs">
       <DependentUpon>Report_TonKho.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="CrystalReport_DoanhThu.rpt">
+    <Compile Include="TestData_Input.cs" />
+    <EmbeddedResource Include="CrystalReport_DoanhThuNgay.rpt">
       <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
-      <LastGenOutput>CrystalReport_DoanhThu.cs</LastGenOutput>
+      <LastGenOutput>CrystalReport_DoanhThuNgay.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="CrystalReport_NhanVien.rpt">
       <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
@@ -151,6 +168,7 @@
     <Content Include="Image\Icon\icons8-edit-48.png" />
     <Content Include="Image\Icon\icons8-eye-48.png" />
     <Content Include="Image\Icon\icons8-save-48.png" />
+    <None Include="Resources\ShowDetail.png" />
     <None Include="Resources\icons8-print-48.png" />
     <None Include="Resources\icons8-search-48.png" />
     <None Include="Resources\icons8-save-48.png" />
@@ -163,6 +181,13 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{C0C07587-41A7-46C8-8FBD-3F9C8EBE2DDC}" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

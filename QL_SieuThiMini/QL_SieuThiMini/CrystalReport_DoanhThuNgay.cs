@@ -16,14 +16,14 @@ namespace QL_SieuThiMini {
     using CrystalDecisions.CrystalReports.Engine;
     
     
-    public class CrystalReport_DoanhThu : ReportClass {
+    public class CrystalReport_DoanhThuNgay : ReportClass {
         
-        public CrystalReport_DoanhThu() {
+        public CrystalReport_DoanhThuNgay() {
         }
         
         public override string ResourceName {
             get {
-                return "CrystalReport_DoanhThu.rpt";
+                return "CrystalReport_DoanhThuNgay.rpt";
             }
             set {
                 // Do nothing
@@ -41,7 +41,7 @@ namespace QL_SieuThiMini {
         
         public override string FullResourceName {
             get {
-                return "QL_SieuThiMini.CrystalReport_DoanhThu.rpt";
+                return "QL_SieuThiMini.CrystalReport_DoanhThuNgay.rpt";
             }
             set {
                 // Do nothing
@@ -90,9 +90,9 @@ namespace QL_SieuThiMini {
     }
     
     [System.Drawing.ToolboxBitmapAttribute(typeof(CrystalDecisions.Shared.ExportOptions), "report.bmp")]
-    public class CachedCrystalReport_DoanhThu : Component, ICachedReport {
+    public class CachedCrystalReport_DoanhThuNgay : Component, ICachedReport {
         
-        public CachedCrystalReport_DoanhThu() {
+        public CachedCrystalReport_DoanhThuNgay() {
         }
         
         [Browsable(false)]
@@ -129,7 +129,7 @@ namespace QL_SieuThiMini {
         }
         
         public virtual CrystalDecisions.CrystalReports.Engine.ReportDocument CreateReport() {
-            CrystalReport_DoanhThu rpt = new CrystalReport_DoanhThu();
+            CrystalReport_DoanhThuNgay rpt = new CrystalReport_DoanhThuNgay();
             rpt.Site = this.Site;
             return rpt;
         }

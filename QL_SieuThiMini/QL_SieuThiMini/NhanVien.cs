@@ -11,11 +11,14 @@ using System.Windows.Forms;
 
 namespace QL_SieuThiMini
 {
+    
     public partial class NhanVien : Form
     {
-        SqlDataAdapter da_PhanQuyen;
-        DataSet ds_PhanQuyen=new DataSet();
-        private List<NhanVienST> danhSachNhanVien = new List<NhanVienST>();
+        DataSet ds_NhanVien = new DataSet();
+        SqlDataAdapter da_NhanVien;
+        SqlDataAdapter da_ChucVu;
+        DataSet ds_ChucVu=new DataSet();
+        private List<NhanVienSTMN> danhSachNhanVien = new List<NhanVienSTMN>();
         public NhanVien()
         {
             InitializeComponent();
@@ -28,129 +31,77 @@ namespace QL_SieuThiMini
             if (r == DialogResult.No)
                 e.Cancel = true;
         }
-        void LoadDuLieuPhanQuyen()
+        public void LoadData()
         {
-            string strSel = "select*from QuyenHan";
-            da_PhanQuyen = new SqlDataAdapter(strSel, env.conn);
-            da_PhanQuyen.Fill(ds_PhanQuyen, "QuyenHan");
-            comboBox_PhanQuyen.DataSource = ds_PhanQuyen.Tables["QuyenHan"];
-            comboBox_PhanQuyen.DisplayMember = "TenNV";
-            comboBox_PhanQuyen.ValueMember = "MaNV";
-        }
-        private void RefreshDanhSachNhanVien()
-        {
-            listView_NhanVien.Items.Clear();
-
-            foreach (NhanVienST nhanVien in danhSachNhanVien)
+            if (ds_NhanVien != null)
             {
-                ListViewItem item = new ListViewItem(new[] { nhanVien.TenNhanVien, nhanVien.DiaChi, nhanVien.SoDienThoai, nhanVien.QuyenHan });
-                listView_NhanVien.Items.Add(item);
+                ds_NhanVien = new DataSet();
             }
-        }
-
-        private void btnAdd_Click(object sender, EventArgs e)
-        {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(txtTenNV.Text) || string.IsNullOrWhiteSpace(txtDiaChi.Text) || string.IsNullOrWhiteSpace(txtSDT.Text))
+            if (!ds_NhanVien.Tables.Contains("NhanVien"))
             {
-                MessageBox.Show("Vui lòng nhập đủ thông tin nhân viên.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                ds_NhanVien.Tables.Add("NhanVien");
             }
-
-            // Get input values
-            string tenNhanVien = txtTenNV.Text;
-            string diaChi = txtDiaChi.Text;
-            string soDienThoai = txtSDT.Text;
-            string quyenHan = comboBox_PhanQuyen.SelectedItem.ToString();
-
-            // Create a new employee
-            NhanVienST nhanVien = new NhanVienST(tenNhanVien, diaChi, soDienThoai, quyenHan);
-
-            // Add the new employee to the list
-            danhSachNhanVien.Add(nhanVien);
-
-            // Refresh the ListView
-            RefreshDanhSachNhanVien();
-
-            // Provide feedback to the user
-            MessageBox.Show("Thêm nhân viên thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            // Clear input fields
-            ClearInputFields();
-
-        }
-
-        private void btnUpdate_Click(object sender, EventArgs e)
-        {
-            // Check if an employee is selected
-            if (listView_NhanVien.SelectedItems.Count == 0)
+            else
             {
-                MessageBox.Show("Vui lòng chọn một nhân viên để cập nhật.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                ds_NhanVien.Tables["NhanVien"].Clear();
             }
-
-            // Validate input
-            if (string.IsNullOrWhiteSpace(txtTenNV.Text) || string.IsNullOrWhiteSpace(txtDiaChi.Text) || string.IsNullOrWhiteSpace(txtSDT.Text))
-            {
-                MessageBox.Show("Vui lòng nhập đủ thông tin nhân viên.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // Get input values
-            string tenNhanVien = txtTenNV.Text;
-            string diaChi = txtDiaChi.Text;
-            string soDienThoai = txtSDT.Text;
-            string quyenHanMoi = comboBox_PhanQuyen.SelectedItem.ToString();
-
-            // Get the selected employee
-            int selectedIndex = listView_NhanVien.SelectedItems[0].Index;
-
-            // Update the selected employee
-            danhSachNhanVien[selectedIndex] = new NhanVienST(tenNhanVien, diaChi, soDienThoai, quyenHanMoi);
-
-            // Refresh the ListView
-            RefreshDanhSachNhanVien();
-
-            // Provide feedback to the user
-            MessageBox.Show("Cập nhật nhân viên thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            // Clear input fields
-            ClearInputFields();
+            string query = "SELECT NhanVien.*, ChucVu.TenCV FROM NhanVien " +
+                   "JOIN ChucVu ON NhanVien.MaCV = ChucVu.MaCV";
+            da_NhanVien = new SqlDataAdapter(query, env.conn);
+            da_NhanVien.Fill(ds_NhanVien, "NhanVien");
+            dgv_DanhSachNhanVien.DataSource = ds_NhanVien.Tables["NhanVien"];
+            DataColumn[] key = new DataColumn[1];
+            key[0] = ds_NhanVien.Tables["NhanVien"].Columns[0];
+            ds_NhanVien.Tables["NhanVien"].PrimaryKey = key;
         }
-
-        private void btnDelete_Click(object sender, EventArgs e)
+        void LoadCombbChucVu()
         {
-            // Check if an employee is selected
-            if (listView_NhanVien.SelectedItems.Count == 0)
-            {
-                MessageBox.Show("Vui lòng chọn một nhân viên để xoá.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // Get the selected employee
-            int selectedIndex = listView_NhanVien.SelectedItems[0].Index;
-
-            // Remove the selected employee from the list
-            danhSachNhanVien.RemoveAt(selectedIndex);
-
-            // Refresh the ListView
-            RefreshDanhSachNhanVien();
-
-            // Provide feedback to the user
-            MessageBox.Show("Xoá nhân viên thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            // Clear input fields
-            ClearInputFields();
+            string strSel = "select*from ChucVu";
+            da_ChucVu = new SqlDataAdapter(strSel, env.conn);
+            da_ChucVu.Fill(ds_ChucVu, "ChucVu");
+            comboBox_ChucVu.DataSource = ds_ChucVu.Tables["ChucVu"];
+            comboBox_ChucVu.DisplayMember = "TenCV";
+            comboBox_ChucVu.ValueMember = "MacV";
         }
-
-        private void btnThoat_Click(object sender, EventArgs e)
+        void LoadCombbSearchChucVu()
         {
-            this.Close();
+            string strSel = "select*from ChucVu";
+            da_ChucVu = new SqlDataAdapter(strSel, env.conn);
+            da_ChucVu.Fill(ds_ChucVu, "ChucVu");
+            comboBox_SearchChucVu.DataSource = ds_ChucVu.Tables["ChucVu"];
+            comboBox_SearchChucVu.DisplayMember = "TenCV";
+            comboBox_SearchChucVu.ValueMember = "MacV";
         }
+        public bool KiemTraKhoaChinh(string maCV)
+        {
+            DataTable table = new DataTable();
 
+            string selectString = "SELECT * FROM ChucVu WHERE MaChucVu = '" + maCV + "'";
+            SqlDataAdapter daKTKC = new SqlDataAdapter(selectString, env.conn);
+            daKTKC.Fill(table);
+            if (table.Rows.Count > 0)
+            {
+                return false;
+            }
+            return true;
+        }
+        private bool kiemTraDuLieuSua()
+        {
+            bool check = true;
+            if (txtMaNV.Text == "" || txtTenNV.Text == "" || txtDiaChi.Text == "" ||
+                txtSDT.Text == "" || dateTimePicker_NgaySinh.Value == null ||
+                comboBox_ChucVu.Text == "" || (radNam.Checked == false && radNu.Checked == false))
+            {
+                MessageBox.Show("Bạn chưa nhập đầy đủ thông Tin !", "Error", MessageBoxButtons.OK);
+                check = false;
+            }
+            return check;
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
-            LoadDuLieuPhanQuyen();
+            LoadCombbChucVu();
+            LoadCombbSearchChucVu();
+            LoadData();
         }
 
         private void labTenNV_Click(object sender, EventArgs e)
@@ -162,87 +113,68 @@ namespace QL_SieuThiMini
             txtTenNV.Text = "";
             txtDiaChi.Text = "";
             txtSDT.Text = "";
-            comboBox_PhanQuyen.SelectedIndex = -1;
-        }
-        private void btnRefresh_Click(object sender, EventArgs e)
-        {
-            // Refresh the ListView
-            RefreshDanhSachNhanVien();
-
-            // Provide feedback to the user
-            MessageBox.Show("Danh sách nhân viên đã được làm mới.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            // Clear input fields
-            ClearInputFields();
-        }
-
-        private void btnIn_Click(object sender, EventArgs e)
-        {
-            if (printDialog1.ShowDialog() == DialogResult.OK)
-            {
-                printDocument1.Print();
-            }
+            comboBox_ChucVu.SelectedIndex = -1;
         }
 
         private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
         {
-            // Set up the printing content
+            // Thiết lập nội dung in
             string printContent = GetPrintContent();
 
-            // Specify font and brush
+            // Chỉ định font và màu chữ
             Font font = new Font("Arial", 12);
             SolidBrush brush = new SolidBrush(Color.Black);
 
-            // Set the margin bounds
+            // Đặt giới hạn lề
             float leftMargin = e.MarginBounds.Left;
             float topMargin = e.MarginBounds.Top;
 
-            // Calculate the number of lines per page
+            // Tính số dòng trên mỗi trang
             int linesPerPage = (int)(e.MarginBounds.Height / font.GetHeight(e.Graphics));
 
-            // Initialize line index and page index
             int lineIndex = 0;
             int pageIndex = 0;
 
-            // Loop through the content and print each line
+            // Lặp lại nội dung và in từng dòng
             while (lineIndex < printContent.Length && pageIndex < linesPerPage)
             {
-                // Calculate the position to print the line
+                // Tính toán bị trí in dòng
                 float yPos = topMargin + (lineIndex * font.GetHeight(e.Graphics));
 
-                // Create a rectangle representing the line bounds
+                // Tạo khung giới hạn dòng
                 RectangleF rect = new RectangleF(leftMargin, yPos, e.MarginBounds.Width, font.GetHeight(e.Graphics));
 
-                // Print the line
+                // In dòng
                 e.Graphics.DrawString(printContent.Substring(lineIndex, Math.Min(printContent.Length - lineIndex, linesPerPage)),
                                       font, brush, rect, StringFormat.GenericDefault);
 
-                // Increment the line index and page index
+                // Tăng chỉ mục dòng, chỉ mục trang
                 lineIndex += linesPerPage;
                 pageIndex++;
             }
 
-            // If there are more lines to print, set HasMorePages to true
             e.HasMorePages = lineIndex < printContent.Length;
         }
         private string GetPrintContent()
         {
             StringBuilder content = new StringBuilder();
 
-            // Append the column headers
-            foreach (ColumnHeader columnHeader in listView_NhanVien.Columns)
+            // Nối các tiêu đề cột
+            foreach (DataGridViewColumn column in dgv_DanhSachNhanVien.Columns)
             {
-                content.Append(columnHeader.Text.PadRight(20));
+                content.Append(column.HeaderText.PadRight(20));
             }
 
             content.AppendLine();
 
-            // Append the data from each row
-            foreach (ListViewItem item in listView_NhanVien.Items)
+            // Nối data mỗi hàng
+            foreach (DataGridViewRow row in dgv_DanhSachNhanVien.Rows)
             {
-                foreach (ListViewItem.ListViewSubItem subItem in item.SubItems)
+                foreach (DataGridViewCell cell in row.Cells)
                 {
-                    content.Append(subItem.Text.PadRight(20));
+                    // Thêm kiểm tra null khi truy cập thuộc tính Value
+                    string cellValue = cell.Value?.ToString() ?? "";
+                    content.Append(cellValue.PadRight(20));
                 }
 
                 content.AppendLine();
@@ -251,56 +183,334 @@ namespace QL_SieuThiMini
             return content.ToString();
         }
 
-        private void btnSearch_Click(object sender, EventArgs e)
+        private void btnAdd_Click(object sender, EventArgs e)
         {
-            string searchTerm1 = txtSearchName.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(searchTerm1))
+            if (kiemTraDuLieuSua())
             {
-                MessageBox.Show("Vui lòng nhập từ khóa tìm kiếm.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            // Get the search term from the TextBox (assuming you have a TextBox named txtSearch)
-            string searchTerm2 = txtSearchName.Text.ToLower();
+                string maNV = txtMaNV.Text;
+                string tenNV = txtTenNV.Text;
+                string diaChi = txtDiaChi.Text;
+                string sdt = txtSDT.Text;
+                DateTime namSinh = dateTimePicker_NgaySinh.Value;
+                string maChucVu = comboBox_ChucVu.SelectedValue.ToString();
+                string gioiTinh = radNam.Checked ? "Nam" : "Nữ";
 
-            // Filter the list based on the search term
-            List<NhanVienST> searchResults = danhSachNhanVien
-                .Where(nv => nv.TenNhanVien.ToLower().Contains(searchTerm2) ||
-                             nv.DiaChi.ToLower().Contains(searchTerm2) ||
-                             nv.SoDienThoai.ToLower().Contains(searchTerm2) ||
-                             nv.QuyenHan.ToLower().Contains(searchTerm2))
-                .ToList();
+                // Tạo nhân viên mới vào NhanVienSTMN
+                NhanVienSTMN newNhanVien = new NhanVienSTMN(maNV, tenNV, gioiTinh, namSinh, sdt, diaChi, maChucVu);
 
-            // Update the ListView with the search results
-            UpdateListView(searchResults);
+                // Thêm nhân viên mới vào danh sách nhân viên
+                danhSachNhanVien.Add(newNhanVien);
 
-            // Provide feedback to the user
-            MessageBox.Show($"Đã tìm thấy {searchResults.Count} kết quả.", "Kết quả tìm kiếm", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-        private void UpdateListView(List<NhanVienST> data)
-        {
-            listView_NhanVien.Items.Clear();
+                // Thêm nhân viên mới vào database
+                AddNhanVienToDatabase(newNhanVien);
 
-            foreach (NhanVienST nhanVien in data)
-            {
-                ListViewItem item = new ListViewItem(new[] { nhanVien.TenNhanVien, nhanVien.DiaChi, nhanVien.SoDienThoai, nhanVien.QuyenHan });
-                listView_NhanVien.Items.Add(item);
+                // Cập nhật dữ liệu thêm vào ListView
+                LoadData();
+
+                ClearInputFields();
             }
         }
-    }
-    public class NhanVienST
-    {
-        public string TenNhanVien { get; set; }
-        public string DiaChi { get; set; }
-        public string SoDienThoai { get; set; }
-        public string QuyenHan { get; set; }
-
-        public NhanVienST(string tenNhanVien, string diaChi, string soDienThoai, string quyenHan)
+        private void AddNhanVienToDatabase(NhanVienSTMN nhanVien)
         {
-            TenNhanVien = tenNhanVien;
-            DiaChi = diaChi;
-            SoDienThoai = soDienThoai;
-            QuyenHan = quyenHan;
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(env.conn))
+                {
+                    connection.Open();
+
+                    string insertQuery = "INSERT INTO NhanVien (MaNV, TenNV, GioiTinh, NamSinh, SDT_NV, DiaChi_NV, MaCV) " +
+                                         "VALUES (@MaNV, @TenNV, @GioiTinh, @NamSinh, @SDT_NV, @DiaChi_NV, @MaCV)";
+
+                    using (SqlCommand cmd = new SqlCommand(insertQuery, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@MaNV", nhanVien.MaNhanVien);
+                        cmd.Parameters.AddWithValue("@TenNV", nhanVien.TenNhanVien);
+                        cmd.Parameters.AddWithValue("@GioiTinh", nhanVien.GioiTinh);
+                        cmd.Parameters.AddWithValue("@NamSinh", nhanVien.NamSinh);
+                        cmd.Parameters.AddWithValue("@SDT_NV", nhanVien.SoDienThoai);
+                        cmd.Parameters.AddWithValue("@DiaChi_NV", nhanVien.DiaChi);
+                        cmd.Parameters.AddWithValue("@MaCV", nhanVien.MaChucVu);
+
+                        // Thực thi truy vấn
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi thêm nhân viên vào database: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (dgv_DanhSachNhanVien.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dgv_DanhSachNhanVien.SelectedRows[0];
+
+                string maNVToDelete = selectedRow.Cells["MaNV"].Value.ToString();
+
+                DialogResult result = MessageBox.Show($"Bạn có chắc chắn muốn xóa nhân viên có Mã NV: {maNVToDelete}?",
+                                                      "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (result == DialogResult.Yes)
+                {
+                    // Xoá nhân viên khỏi database
+                    DeleteNhanVienFromDatabase(maNVToDelete);
+
+                    // Xoá thông tin nhân viên khỏi ListView
+                    dgv_DanhSachNhanVien.Rows.Remove(selectedRow);
+
+                    ClearInputFields();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn nhân viên cần xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void DeleteNhanVienFromDatabase(string maNV)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(env.conn))
+                {
+                    connection.Open();
+
+                    string deleteQuery = "DELETE FROM NhanVien WHERE MaNV = @MaNV";
+
+                    using (SqlCommand cmd = new SqlCommand(deleteQuery, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@MaNV", maNV);
+
+                        // Thực thi truy vấn
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi xoá thông tin trong database: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnUpdate_Click_1(object sender, EventArgs e)
+        {
+            if (dgv_DanhSachNhanVien.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dgv_DanhSachNhanVien.SelectedRows[0];
+                string maNVToUpdate = selectedRow.Cells["MaNV"].Value.ToString();
+
+                DialogResult result = MessageBox.Show($"Bạn có chắc chắn muốn cập nhật thông tin nhân viên có Mã NV: {maNVToUpdate}?",
+                                                      "Xác nhận cập nhật", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (result == DialogResult.Yes && kiemTraDuLieuSua())
+                {
+                    string tenNV = txtTenNV.Text;
+                    string diaChi = txtDiaChi.Text;
+                    string sdt = txtSDT.Text;
+                    DateTime namSinh = dateTimePicker_NgaySinh.Value;
+                    string maChucVu = comboBox_ChucVu.SelectedValue.ToString();
+                    string gioiTinh = radNam.Checked ? "Nam" : "Nữ";
+
+                    // Update employee information in the database
+                    UpdateNhanVienInDatabase(maNVToUpdate, tenNV, gioiTinh, namSinh, sdt, diaChi, maChucVu);
+
+                    // Update the selected row in the DataGridView
+                    selectedRow.Cells["TenNV"].Value = tenNV;
+                    selectedRow.Cells["GioiTinh"].Value = gioiTinh;
+                    selectedRow.Cells["NamSinh"].Value = namSinh.ToShortDateString();
+                    selectedRow.Cells["SDT_NV"].Value = sdt;
+                    selectedRow.Cells["DiaChi_NV"].Value = diaChi;
+                    selectedRow.Cells["MaCV"].Value = maChucVu;
+
+                    ClearInputFields();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn nhân viên cần cập nhật!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        private void UpdateNhanVienInDatabase(string maNV, string tenNV, string gioiTinh, DateTime namSinh, string sdt, string diaChi, string maChucVu)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(env.conn))
+                {
+                    connection.Open();
+
+                    string updateQuery = "UPDATE NhanVien SET TenNV = @TenNV, GioiTinh = @GioiTinh, NamSinh = @NamSinh, " +
+                                         "SDT_NV = @SDT_NV, DiaChi_NV = @DiaChi_NV, MaCV = @MaCV WHERE MaNV = @MaNV";
+
+                    using (SqlCommand cmd = new SqlCommand(updateQuery, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@MaNV", maNV);
+                        cmd.Parameters.AddWithValue("@TenNV", tenNV);
+                        cmd.Parameters.AddWithValue("@GioiTinh", gioiTinh);
+                        cmd.Parameters.AddWithValue("@NamSinh", namSinh);
+                        cmd.Parameters.AddWithValue("@SDT_NV", sdt);
+                        cmd.Parameters.AddWithValue("@DiaChi_NV", diaChi);
+                        cmd.Parameters.AddWithValue("@MaCV", maChucVu);
+                        // Thực thi truy vấn
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi cập nhật thông tin trong database: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            // Cập nhật dữ liệu vào database
+            LoadData();
+            dgv_DanhSachNhanVien.ClearSelection();
+        }
+        private List<NhanVienSTMN> GetDataFromDatabase()
+        {
+            List<NhanVienSTMN> data = new List<NhanVienSTMN>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(env.conn))
+                {
+                    connection.Open();
+
+                    string selectQuery = "SELECT * FROM NhanVien";
+
+                    using (SqlCommand cmd = new SqlCommand(selectQuery, connection))
+                    {
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                NhanVienSTMN nhanVien = new NhanVienSTMN(
+                                    reader["MaNV"].ToString(),
+                                    reader["TenNV"].ToString(),
+                                    reader["GioiTinh"].ToString(),
+                                    Convert.ToDateTime(reader["NamSinh"]),
+                                    reader["SDT_NV"].ToString(),
+                                    reader["DiaChi_NV"].ToString(),
+                                    reader["MaCV"].ToString()
+                                );
+
+                                data.Add(nhanVien);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi thông tin từ database: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return data;
+        }
+        private void btnIn_Click(object sender, EventArgs e)
+        {
+            if (printDialog1.ShowDialog() == DialogResult.OK)
+            {
+                printDocument1.Print();
+            }
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnSearch_Click_1(object sender, EventArgs e)
+        {
+            string searchName = txtSearchName.Text.Trim();
+            string searchChucVu = comboBox_SearchChucVu.SelectedValue?.ToString().Trim();
+
+            // Kiểm tra nhập ít nhất một thông tin cần thiết để tìm 
+            if (!string.IsNullOrEmpty(searchName) || !string.IsNullOrEmpty(searchChucVu))
+            {
+                // Filter the DataView based on the entered product name
+                DataView dv = new DataView(ds_NhanVien.Tables["NhanVien"]);
+                dv.RowFilter = $"TenNV LIKE '%{searchName}%'";
+
+
+                // Check if any rows match the filter
+                if (dv.Count > 0)
+                {
+                    // Display the filtered results in the DataGridView
+                    dgv_DanhSachNhanVien.DataSource = dv.ToTable();
+                }
+                else
+                {
+                    MessageBox.Show("Không tìm thấy nhân viên.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng nhập ít nhất một tiêu chí tìm kiếm!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private List<NhanVienSTMN> SearchNhanVienInDatabase(string name, string chucVu)
+        {
+            List<NhanVienSTMN> searchResults = new List<NhanVienSTMN>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(env.conn))
+                {
+                    connection.Open();
+
+                    string searchQuery = "SELECT * FROM NhanVien WHERE (@TenNV IS NULL OR TenNV LIKE @TenNV) AND (@MaCV IS NULL OR MaCV = @MaCV)";
+
+                    using (SqlCommand cmd = new SqlCommand(searchQuery, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@TenNV", string.IsNullOrEmpty(name) ? (object)DBNull.Value : $"%{name}%");
+                        cmd.Parameters.AddWithValue("@MaCV", string.IsNullOrEmpty(chucVu) ? (object)DBNull.Value : chucVu);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                NhanVienSTMN nhanVien = new NhanVienSTMN(
+                                    reader["MaNV"].ToString(),
+                                    reader["TenNV"].ToString(),
+                                    reader["GioiTinh"].ToString(),
+                                    Convert.ToDateTime(reader["NamSinh"]),
+                                    reader["SDT_NV"].ToString(),
+                                    reader["DiaChi_NV"].ToString(),
+                                    reader["MaCV"].ToString()
+                                );
+
+                                searchResults.Add(nhanVien);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi tìm kiếm trong database: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return searchResults;
+        }
+
+        private void grThongTinNhanVien_Enter(object sender, EventArgs e)
+        {
+
+        }
+        private void dgv_DanhSachNhanVien_SelectionChanged(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void btnShowDetail_Click(object sender, EventArgs e)
+        {
+            Report_NhanVien formReportViewer = new Report_NhanVien();
+            formReportViewer.Show();
         }
     }
 }

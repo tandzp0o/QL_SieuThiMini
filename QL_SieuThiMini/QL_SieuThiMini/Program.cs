@@ -16,7 +16,7 @@ namespace QL_SieuThiMini
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Report_NhanVien());
+            Application.Run(new NhanVien());
         }
     }
 }
